@@ -1,0 +1,47 @@
+# Python
+## Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+## C extensions
+*.so
+
+# Virtual Environment
+## venv
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# dotenv
+## Environment variables
+.env
+
+# IDE / Editor
+## VSCode
+.vscode/
+
+## JetBrains (PyCharm, etc.)
+.idea/
+
+## Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Operating System
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Other
+## Log files
+*.log
