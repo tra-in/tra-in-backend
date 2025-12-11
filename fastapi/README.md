@@ -73,8 +73,22 @@ uvicorn main:app --reload
 │   ├── Include/
 │   ├── Lib/
 │   └── Scripts/
+├── app/
+│   ├── __init__.py             # 디렉토리를 패키지로 인식시킴
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── travel.py           # 여행 추천 관련 API 엔드포인트를 정의
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── config.py           # 환경 변수 및 설정을 관리
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   └── travel.py           # Pydantic 스키마(데이터 모델)를 정의
+│   ├── services/
+│   │   ├── __init__.py
+│   │   └── recommendation.py   # OpenAI 호출 등 핵심 비즈니스 로직을 처리
+│   └── main.py                 # FastAPI 앱을 생성하고 라우터를 등록하는 진입점
 ├── .env                    # 환경 변수 파일 (API 키 등 민감 정보 저장)
-├── main.py                 # FastAPI 애플리케이션 메인 코드
 ├── README.md               # 프로젝트 설명 및 사용법 안내 파일
 └── requirements.txt        # 프로젝트 의존성(라이브러리) 목록
 ```
