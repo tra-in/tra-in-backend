@@ -2,3 +2,10 @@ fastapi
 uvicorn
 python-dotenv
 openai
+pydantic
+pydantic-settings
+chromadb==0.5.4
+sentence-transformers==2.3.1
+python-dotenv==1.0.0
+tqdm==4.66.1
+requests==2.31.0
