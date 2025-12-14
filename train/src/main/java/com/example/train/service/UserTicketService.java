@@ -9,14 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserTicketService {
 
     private final UserTicketRepository userTicketRepository;
-
-    // "2025-12-16T06:30:00" 형식
     private static final DateTimeFormatter ISO_FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Transactional
@@ -24,7 +26,6 @@ public class UserTicketService {
         Long userId = request.getUserId();
         boolean isHopper = request.isHopper();
 
-        // 기존 ticketId 최댓값 + 1 -> 새 여행 번호
         Long maxTicketId = userTicketRepository.findMaxTicketIdByUserId(userId);
         long newTicketId = (maxTicketId == null ? 0L : maxTicketId) + 1L;
 
@@ -47,5 +48,36 @@ public class UserTicketService {
 
             userTicketRepository.save(ticket);
         }
+    }
+
+    // 반환 타입 List<UserTicketDto>로 변경!
+    public List<UserTicketDto> getUserTicketsByUserId(Long userId) {
+        // 1. 엔티티 조회
+        List<UserTicket> tickets = userTicketRepository.findByUserId(userId);
+
+        // 2. ticketId별로 그룹화
+        Map<Long, List<UserTicket>> grouped = tickets.stream()
+                .collect(Collectors.groupingBy(UserTicket::getTicketId));
+
+        // 3. DTO로 변환
+        List<UserTicketDto> result = new ArrayList<>();
+
+        for (Map.Entry<Long, List<UserTicket>> entry : grouped.entrySet()) {
+            List<UserTicket> legs = entry.getValue();
+            if (legs.isEmpty()) continue;
+
+            UserTicket first = legs.get(0);
+
+            UserTicketDto dto = new UserTicketDto();
+            dto.setUserId(first.getUserId());
+            dto.setHopper(first.isHopper());
+            dto.setLegs(legs.stream()
+                    .map(UserTicketDto::toDto)
+                    .collect(Collectors.toList()));
+
+            result.add(dto);
+        }
+
+        return result;
     }
 }

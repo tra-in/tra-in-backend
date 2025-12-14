@@ -1,8 +1,9 @@
 package com.example.train.dto;
 
+import com.example.train.domain.UserTicket;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Data
@@ -45,5 +46,18 @@ public class UserTicketDto {
 
         @JsonProperty("seatCode")
         private String seatCode;
+    }
+
+    // UserTicket -> LegDto 변환
+    public static LegDto toDto(UserTicket ticket) {
+        LegDto dto = new LegDto();
+        dto.setOriginStation(ticket.getOriginStation());
+        dto.setDestStation(ticket.getDestStation());
+        dto.setDepartureTime(ticket.getDepartureTime().toString());
+        dto.setArrivalTime(ticket.getArrivalTime().toString());
+        dto.setTrainNo(ticket.getTrainNo());
+        dto.setCarNo(ticket.getCarNo());
+        dto.setSeatCode(ticket.getSeatCode());
+        return dto;
     }
 }

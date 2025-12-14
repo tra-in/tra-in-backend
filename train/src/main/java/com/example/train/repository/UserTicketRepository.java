@@ -1,9 +1,12 @@
 package com.example.train.repository;
 
 import com.example.train.domain.UserTicket;
+import com.example.train.dto.UserTicketDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface UserTicketRepository extends JpaRepository<UserTicket, Long> {
 
@@ -12,4 +15,7 @@ public interface UserTicketRepository extends JpaRepository<UserTicket, Long> {
      */
     @Query("select max(ut.ticketId) from UserTicket ut where ut.userId = :userId")
     Long findMaxTicketIdByUserId(@Param("userId") Long userId);
+
+    // userId로 여러 row 조회
+    List<UserTicket> findByUserId(Long userId);
 }
