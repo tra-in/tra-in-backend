@@ -6,6 +6,7 @@ import logging
 from app.schemas.travel import UserRequest, RecommendedPlace
 from app.services.recommendation import get_travel_recommendations, recommendation_service
 from app.core.config import settings
+from app.schemas.search import LocationBasedRequest, HybridSearchResponse
 
 # 조건부 import - KTO 기능이 활성화된 경우에만 Vector 검색 기능 로드
 try:
@@ -16,10 +17,12 @@ try:
             StatsResponse
         )
         from app.services.tourism_search import tourism_search
+        from app.services.hybrid_search import hybrid_search_service
         VECTOR_SEARCH_AVAILABLE = True
     else:
         VECTOR_SEARCH_AVAILABLE = False
         tourism_search = None
+        hybrid_search_service = None
         print("KTO 키가 설정되지 않아 Vector 검색 기능이 비활성화됩니다.")
 except ImportError as e:
     VECTOR_SEARCH_AVAILABLE = False
@@ -268,7 +271,77 @@ if VECTOR_SEARCH_AVAILABLE:
         except Exception as e:
             logger.error(f"유사 장소 검색 중 오류: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+    # hybrid search
 
+    @router.post(
+        "/search/location-hybrid",
+        summary="🎯 위치 + 선호도 하이브리드 검색",
+        description="사용자의 정확한 위치와 개인 선호도를 모두 고려한 차세대 검색",
+        tags=["Advanced Search"]
+    )
+    async def location_hybrid_search(request: LocationBasedRequest):
+        """위치 + 선호도 통합 하이브리드 검색"""
+
+        # 🔑 안전장치: 서비스 가용성 확인
+        if not VECTOR_SEARCH_AVAILABLE or hybrid_search_service is None:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "message": "하이브리드 검색 기능이 비활성화되어 있습니다.",
+                    "reason": "KTO_SERVICE_KEY가 설정되지 않았거나 Vector DB가 준비되지 않았습니다.",
+                    "available_alternatives": [
+                        "/travel/recommend-travel (기본 위치 기반 추천)",
+                        "/travel/search/simple (기본 텍스트 검색)"
+                    ],
+                    "setup_guide": "KTO API 키를 .env 파일에 설정하고 서버를 재시작해주세요."
+                }
+            )
+
+        try:
+            # 가중치 합계 검증
+            total_weight = (
+                request.distance_weight +
+                request.similarity_weight +
+                request.preference_weight
+            )
+            if abs(total_weight - 1.0) > 0.01:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"가중치 합계는 1.0이어야 합니다. 현재: {total_weight:.3f}"
+                )
+
+            # 하이브리드 검색 실행
+            results = hybrid_search_service.search(request)
+
+            return {
+                "search_metadata": {
+                    "user_location": {"lat": request.latitude, "lon": request.longitude},
+                    "search_radius_km": request.max_distance_km,
+                    "travel_preference": request.travel_preference.value if request.travel_preference else None,
+                    "query": request.query,
+                    "weights": {
+                        "distance": request.distance_weight,
+                        "similarity": request.similarity_weight,
+                        "preference": request.preference_weight
+                    }
+                },
+                "results": [r.dict() for r in results],
+                "total_results": len(results),
+                "search_quality": {
+                    "excellent": len(results) >= 8,
+                    "good": 4 <= len(results) < 8,
+                    "limited": len(results) < 4
+                }
+            }
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"하이브리드 검색 오류: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"검색 처리 중 오류가 발생했습니다: {str(e)}"
+            )
 else:
     # Vector 검색이 비활성화된 경우의 대체 엔드포인트들
 
@@ -276,6 +349,7 @@ else:
     @router.get("/search/simple")
     @router.get("/recommend/query")
     @router.get("/similar")
+    @router.post("/search/location-hybrid")
     async def vector_search_unavailable():
         """Vector 검색 기능 비활성화 안내"""
         raise HTTPException(
@@ -290,6 +364,7 @@ else:
 
 
 # ==================== 3. 시스템 정보 및 통계 ====================
+
 
 @router.get(
     "/stats",
@@ -351,7 +426,8 @@ async def get_service_status():
             "vector_search": VECTOR_SEARCH_AVAILABLE,
             "semantic_search": VECTOR_SEARCH_AVAILABLE,
             "rag_recommendation": VECTOR_SEARCH_AVAILABLE,
-            "similarity_search": VECTOR_SEARCH_AVAILABLE
+            "similarity_search": VECTOR_SEARCH_AVAILABLE,
+            "hybrid_search": VECTOR_SEARCH_AVAILABLE
         }
 
         # API 엔드포인트 맵
@@ -360,7 +436,8 @@ async def get_service_status():
             "vector_search": "/travel/search" if VECTOR_SEARCH_AVAILABLE else None,
             "simple_search": "/travel/search/simple" if VECTOR_SEARCH_AVAILABLE else None,
             "ai_recommend": "/travel/recommend/query" if VECTOR_SEARCH_AVAILABLE else None,
-            "similar_search": "/travel/similar" if VECTOR_SEARCH_AVAILABLE else None
+            "similar_search": "/travel/similar" if VECTOR_SEARCH_AVAILABLE else None,
+            "hybrid_search": "/travel/search/location-hybrid" if VECTOR_SEARCH_AVAILABLE else None
         }
 
         return status_info
