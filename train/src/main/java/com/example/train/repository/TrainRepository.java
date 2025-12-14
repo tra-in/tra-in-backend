@@ -1,6 +1,6 @@
-package com.example.ticket.repository;
+package com.example.train.repository;
 
-import com.example.ticket.domain.Train;
+import com.example.train.domain.Train;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

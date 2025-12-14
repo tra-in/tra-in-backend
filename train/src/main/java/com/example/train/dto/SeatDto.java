@@ -1,4 +1,4 @@
-package com.example.ticket.dto;
+package com.example.train.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

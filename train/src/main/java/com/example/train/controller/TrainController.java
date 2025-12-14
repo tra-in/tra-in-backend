@@ -1,14 +1,14 @@
-package com.example.ticket.controller;
+package com.example.train.controller;
 
-import com.example.ticket.domain.Train;
-import com.example.ticket.dto.CarDto;
-import com.example.ticket.dto.SeatDto;
-import com.example.ticket.dto.StationDto;
-import com.example.ticket.dto.TrainDto;
-import com.example.ticket.repository.CarRepository;
-import com.example.ticket.repository.SeatRepository;
-import com.example.ticket.repository.StationRepository;
-import com.example.ticket.repository.TrainRepository;
+import com.example.train.domain.Train;
+import com.example.train.dto.CarDto;
+import com.example.train.dto.SeatDto;
+import com.example.train.dto.StationDto;
+import com.example.train.dto.TrainDto;
+import com.example.train.repository.CarRepository;
+import com.example.train.repository.SeatRepository;
+import com.example.train.repository.StationRepository;
+import com.example.train.repository.TrainRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
