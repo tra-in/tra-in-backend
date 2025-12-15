@@ -1,46 +1,73 @@
 package com.example.train.domain;
+
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity @Table( name = "user_pick",
-        uniqueConstraints = { @UniqueConstraint(
-                name = "uq_pick_once",
-                columnNames = {"user_ticket_id", "content_id"}) } )
+@Entity
+@Table(
+        name = "user_pick",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_ticket_content",
+                        columnNames = {"user_id", "ticket_id", "content_id"}
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserPick {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name="user_id", nullable=false)
+
+    @Column(name = "user_id", nullable = false)
     private Long userId;
-    @Column(name="user_ticket_id", nullable=false)
-    private Long userTicketId;
-    @Column(name="dest_station", nullable=false, length=50)
+
+    @Column(name = "ticket_id", nullable = false)
+    private Long ticketId;
+
+    @Column(name = "dest_station", nullable = false)
     private String destStation;
-    @Column(name="content_id", nullable=false, length=50)
-    private String contentId;
-    @Column(name="title", nullable=false, length=255)
+
+    @Column(name = "content_id", nullable = false)
+    private Long contentId;
+
     private String title;
-    @Column(name="address")
     private String address;
-    @Column(name="distance_km")
     private Double distanceKm;
-    @Column(name="content_type_name", length=50)
     private String contentTypeName;
-    @Column(name="latitude")
     private Double latitude;
-    @Column(name="longitude")
     private Double longitude;
-    @Column(name="image_url", length=500)
     private String imageUrl;
-    @Column(name="phone", length=50)
     private String phone;
-    @Column(name="start_time")
-    private LocalDateTime startTime;
-    @Column(name="end_time")
-    private LocalDateTime endTime;
+
+    /** ❤️ 고정 여부 */
+    @Column(name = "is_pinned", nullable = false)
+    private boolean pinned;
+
+    /** ❌ 재추천 제외 여부 */
+    @Column(name = "is_excluded", nullable = false)
+    private boolean excluded;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        createdAt = updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

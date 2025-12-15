@@ -1,21 +1,19 @@
 package com.example.train.dto;
 
-import lombok.*;
-import java.time.LocalDateTime;
+import lombok.Data;
 import java.util.List;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Data
 public class UserPickBulkRequest {
+
     private Long userId;
     private Long userTicketId;
     private String destStation;
-    private List<PickItem> picks;
+    private List<PickDto> picks;
 
-    @Getter @Setter
-    @NoArgsConstructor @AllArgsConstructor
-    public static class PickItem {
-        private String contentId;
+    @Data
+    public static class PickDto {
+        private Long contentId;
         private String title;
         private String address;
         private Double distanceKm;
@@ -24,7 +22,5 @@ public class UserPickBulkRequest {
         private Double longitude;
         private String imageUrl;
         private String phone;
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
     }
 }

@@ -3,11 +3,16 @@ package com.example.train.repository;
 import com.example.train.domain.UserPick;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserPickRepository extends JpaRepository<UserPick, Long> {
 
-    // 중복 체크용: 같은 userTicketId에서 contentId가 이미 있나?
-    List<UserPick> findByUserTicketIdAndContentIdIn(Long userTicketId, Collection<String> contentIds);
+    List<UserPick> findByUserIdAndTicketId(Long userId, Long ticketId);
+
+    List<UserPick> findByUserIdAndTicketIdAndExcludedTrue(Long userId, Long ticketId);
+
+    Optional<UserPick> findByUserIdAndTicketIdAndContentId(
+            Long userId, Long ticketId, Long contentId
+    );
 }
