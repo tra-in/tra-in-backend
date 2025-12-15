@@ -1,6 +1,5 @@
 package com.example.train.controller;
 
-import com.example.train.domain.UserTicket;
 import com.example.train.dto.UserTicketDto;
 import com.example.train.service.UserTicketService;
 import lombok.RequiredArgsConstructor;
@@ -33,4 +32,12 @@ public class UserTicketController {
         List<UserTicketDto> tickets = userTicketService.getUserTicketsByUserId(userId);  // 이미 DTO로 반환됨
         return ResponseEntity.ok(tickets);
     }
+
+    @GetMapping("/user-tickets/latest-main")
+    public ResponseEntity<UserTicketDto> getLatestTripForMain(@RequestParam Long userId) {
+        UserTicketDto dto = userTicketService.getLatestTripForMain(userId);
+        if (dto == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(dto);
+    }
+
 }

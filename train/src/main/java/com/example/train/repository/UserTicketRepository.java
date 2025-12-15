@@ -1,7 +1,6 @@
 package com.example.train.repository;
 
 import com.example.train.domain.UserTicket;
-import com.example.train.dto.UserTicketDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +17,6 @@ public interface UserTicketRepository extends JpaRepository<UserTicket, Long> {
 
     // userId로 여러 row 조회
     List<UserTicket> findByUserId(Long userId);
+
+    List<UserTicket> findByUserIdAndTicketId(Long userId, Long ticketId);
 }
