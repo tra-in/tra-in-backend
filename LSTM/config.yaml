@@ -1,0 +1,30 @@
+db:
+  url: "mysql+pymysql://train_root:train_root@localhost:3306/train?charset=utf8mb4"
+
+data:
+  # 학습에 사용할 시계열 bucket 간격(분)
+  bucket_minutes: 10
+  # LSTM 입력 길이(예: 12 = 2시간치)
+  lookback_steps: 12
+  # 타깃: delay_minutes (arr_actual - arr_planned)
+  target: "arr_delay_min"
+  # 구간 정의: dep_station_code + '->' + arr_station_code
+  segment_key: "segment"
+
+train:
+  batch_size: 256
+  epochs: 10
+  lr: 0.001
+  hidden_size: 64
+  num_layers: 1
+  mdn_components: 3
+  emb_dim: 16
+  train_ratio: 0.8
+  seed: 42
+  device: "cpu"   # "cuda" 가능
+
+paths:
+  artifacts_dir: "./artifacts"
+  model_path: "./artifacts/model.pt"
+  segment_map_path: "./artifacts/segment_map.json"
+  scaler_path: "./artifacts/scaler.json"
