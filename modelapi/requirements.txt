@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+sqlalchemy
+pymysql
+pandas
+numpy
+torch
+tqdm
+PyYAML
+scikit-learn
