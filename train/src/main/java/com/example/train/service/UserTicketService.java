@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,4 +81,49 @@ public class UserTicketService {
 
         return result;
     }
+
+    public UserTicketDto getLatestTripForMain(Long userId) {
+
+        Long latestTicketId = userTicketRepository.findMaxTicketIdByUserId(userId);
+        if (latestTicketId == null) return null;
+
+        // 최신 예매
+        List<UserTicket> latestLegs =
+                userTicketRepository.findByUserIdAndTicketId(userId, latestTicketId);
+        if (latestLegs.isEmpty()) return null;
+
+        boolean isHopper = latestLegs.get(0).isHopper();
+
+        List<UserTicket> allLegs = new ArrayList<>();
+
+        if (isHopper) {
+            // 이전 ticket (출발 → 경유)
+            Long prevTicketId = latestTicketId - 1;
+            List<UserTicket> prevLegs =
+                    userTicketRepository.findByUserIdAndTicketId(userId, prevTicketId);
+
+            allLegs.addAll(prevLegs);
+        }
+
+        // 최신 ticket (경유 → 도착)
+        allLegs.addAll(latestLegs);
+
+        // 출발 시간 기준 정렬
+        allLegs.sort(Comparator.comparing(UserTicket::getDepartureTime));
+
+        UserTicket first = allLegs.get(0);
+
+        UserTicketDto dto = new UserTicketDto();
+        dto.setUserId(first.getUserId());
+        dto.setHopper(isHopper);
+        dto.setLegs(
+                allLegs.stream()
+                        .map(UserTicketDto::toDto)
+                        .toList()
+        );
+
+        return dto;
+    }
+
+
 }
