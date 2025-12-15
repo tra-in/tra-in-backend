@@ -64,6 +64,7 @@ public class UserTicketService {
         List<UserTicketDto> result = new ArrayList<>();
 
         for (Map.Entry<Long, List<UserTicket>> entry : grouped.entrySet()) {
+            Long ticketId = entry.getKey();
             List<UserTicket> legs = entry.getValue();
             if (legs.isEmpty()) continue;
 
@@ -71,6 +72,7 @@ public class UserTicketService {
 
             UserTicketDto dto = new UserTicketDto();
             dto.setUserId(first.getUserId());
+            dto.setTicketId(ticketId);
             dto.setHopper(first.isHopper());
             dto.setLegs(legs.stream()
                     .map(UserTicketDto::toDto)
@@ -87,43 +89,25 @@ public class UserTicketService {
         Long latestTicketId = userTicketRepository.findMaxTicketIdByUserId(userId);
         if (latestTicketId == null) return null;
 
-        // 최신 예매
         List<UserTicket> latestLegs =
                 userTicketRepository.findByUserIdAndTicketId(userId, latestTicketId);
         if (latestLegs.isEmpty()) return null;
 
-        boolean isHopper = latestLegs.get(0).isHopper();
-
-        List<UserTicket> allLegs = new ArrayList<>();
-
-        if (isHopper) {
-            // 이전 ticket (출발 → 경유)
-            Long prevTicketId = latestTicketId - 1;
-            List<UserTicket> prevLegs =
-                    userTicketRepository.findByUserIdAndTicketId(userId, prevTicketId);
-
-            allLegs.addAll(prevLegs);
-        }
-
-        // 최신 ticket (경유 → 도착)
-        allLegs.addAll(latestLegs);
-
-        // 출발 시간 기준 정렬
-        allLegs.sort(Comparator.comparing(UserTicket::getDepartureTime));
-
-        UserTicket first = allLegs.get(0);
+        // ✅ 여기서 "한 번의 여행 묶음 ticketId"를 내려줘야 프론트가 trip.ticketId를 갖는다
+        UserTicket first = latestLegs.get(0);
 
         UserTicketDto dto = new UserTicketDto();
         dto.setUserId(first.getUserId());
-        dto.setHopper(isHopper);
+        dto.setTicketId(latestTicketId);      // ✅ 추가!!!
+        dto.setHopper(first.isHopper());
         dto.setLegs(
-                allLegs.stream()
+                latestLegs.stream()
+                        .sorted(Comparator.comparing(UserTicket::getDepartureTime))
                         .map(UserTicketDto::toDto)
                         .toList()
         );
 
         return dto;
     }
-
 
 }
